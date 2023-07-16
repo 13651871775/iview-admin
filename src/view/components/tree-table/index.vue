@@ -1,353 +1,403 @@
 <template>
-  <div>
-    <Card shadow>
-      <!-- 树状表格组件tree-table-vue，基于<a href="https://github.com/MisterTaki/vue-table-with-tree-grid">vue-table-with-tree-grid</a>进行开发，修复了一些bug，添加了一些新属性
-      <p><b>支持使用slot-scope进行自定义列渲染内容</b></p>
-      <p>文档请看<a href="https://github.com/lison16/tree-table-vue">https://github.com/lison16/tree-table-vue</a></p> -->
-      <tree-table expand-key="name" :expand-type="true" :selectable="true" :columns="columns" :data="data"
-      @checkbox-click="handleCheckboxClick"
-      >
-        <template slot="likes" slot-scope="scope">
-          <Button @click="handle(scope)">123</Button>
-        </template>
-        <!-- <template slot="action" slot-scope="scope"> -->
-        <template v-slot:action="scope">
-          <Button @click="addChildNode(scope)">Add Child</Button>
-          <Button @click="editCell(scope)">Edit</Button>
-          {{scope.row.name}}
-        </template>
-      </tree-table>
-    </Card>
-    <Modal v-model="showModal" title="Edit Cell">
-      <Input v-model="editedValue" />
-      <div slot="footer">
-        <Button @click="saveCell">Save</Button>
-        <Button @click="cancelEdit">Cancel</Button>
-      </div>
-    </Modal>
-  </div>
+    <div class="content-inner">
+        <Card>
+            <Split v-model="split1">
+                <div slot="left" class="demo-split-pane">
+                    <bingo-tree width="50%" :data="data"
+                                title="name"
+                                keyId="id"
+                                parentValue="parentId"
+                                draggable
+                                :multiple="showMultiple"
+                                :showCheckbox="showMultiple"
+                                :editNodeBefore="editNodeBefore"
+                                @edit-node="editNode"
+                                :deleteNodeBefore="deleteNodeBefore"
+                                @delete-node="deleteNode"
+                                :onDragBefore="onDragBefore"
+                                @on-drag="onDrag">
+                        <template #topItem="datas">
+                            <DropdownItem name="own" @click.native="ownClick" v-if="!datas.nodeInfo.disabledOwn">
+                                <Icon type="md-create" style="margin-right: 10px" size="16"></Icon>自定义(上)
+                            </DropdownItem>
+                        </template>
+                        <template #bottomItem="datas">
+                            <DropdownItem name="own" @click.native="ownClick" v-if="!datas.nodeInfo.disabledOwn">
+                                <Icon type="md-create" style="margin-right: 10px" size="16"></Icon>自定义(下)
+                            </DropdownItem>
+                        </template>
+                    </bingo-tree>
+                    <bingo-tree width="50%" :data="data2"
+                                title="name"
+                                keyId="id"
+                                parentValue="parentId"
+                                draggable
+                                :multiple="showMultiple"
+                                :showCheckbox="showMultiple"
+                                :editNodeBefore="editNodeBefore"
+                                @edit-node="editNode"
+                                :deleteNodeBefore="deleteNodeBefore"
+                                @delete-node="deleteNode"
+                                :onDragBefore="onDragBefore"
+                                @on-drag="onDrag">
+                        <template #topItem="datas">
+                            <DropdownItem name="own" @click.native="ownClick" v-if="!datas.nodeInfo.disabledOwn">
+                                <Icon type="md-create" style="margin-right: 10px" size="16"></Icon>自定义(上)
+                            </DropdownItem>
+                        </template>
+                        <template #bottomItem="datas">
+                            <DropdownItem name="own" @click.native="ownClick" v-if="!datas.nodeInfo.disabledOwn">
+                                <Icon type="md-create" style="margin-right: 10px" size="16"></Icon>自定义(下)
+                            </DropdownItem>
+                        </template>
+                    </bingo-tree>
+                </div>
+                <div slot="right" class="demo-split-pane">
+                    <Divider>详细描述</Divider>
+                    <h3>使用注意事项</h3>
+                    <span>是否多选：</span><Switch v-model="showMultiple" />
+                    <p style="margin-top: 12px">1、数据源data为树形结构</p>
+                    <p style="margin-top: 12px">2、作用域插槽topItem和bottomItem可定义右键下拉里面的按钮，分别显示在默认按钮的上面和下面</p>
+                    <p style="margin-top: 12px">3、开启draggable可实现拖拽功能，拖拽时显示的蓝色线、红色线和蓝色区域分别代表拖拽到对应
+                    目标节点的下方、上方、里面</p>
+                    <p style="margin-top: 12px">4、editNodeBefore、deleteNodeBefore、onDragBefore分别代表编辑前、删除前、拖拽前的操作
+                    参数有对应的callback方法，代表是否允许执行操作，切记callback不可使用在异步请求里</p>
+                    <p style="margin-top: 12px">5、开启树节点多选时，参数需要:multiple="true" :showCheckbox="true"这样写，
+                    因为组件里拿这两个属性进行判断了</p>
+                    <p style="margin-top: 12px">6、tagColor可定义文字颜色</p>
+                    <p style="margin-top: 12px">7、其他详细属性参照右侧例子</p>
+                </div>
+            </Split>
+        </Card>
+    </div>
 </template>
-
 <script>
+import bingoTree from '@/components/tree/component/index.vue'
 export default {
-  name: 'tree_table_page',
+  name: 'bingo-tree-demo',
+  components: {
+    bingoTree
+  },
   data () {
     return {
-      columns: [
-        {
-          title: 'name',
-          key: 'name',
-          width: '400px'
-        },
-        {
-          title: 'sex',
-          key: 'sex',
-          minWidth: '50px'
-        },
-        {
-          title: 'score',
-          key: 'score'
-        },
-        {
-          title: 'likes',
-          key: 'likes',
-          minWidth: '200px',
-          type: 'template',
-          template: 'likes'
-        },
-        {
-          title: '操作',
-          key: 'action',
-          width: 150,
-          type: 'template',
-          template: 'action'
-          // fixed: 'right',
-          // align: 'center'
-        }
-      ],
+      split1: 0.7,
+      showMultiple: true, // 是否多选
       data: [
         {
-          name: 'Jack',
-          sex: 'male',
-          likes: ['football', 'basketball'],
-          score: 10,
+          name: 'parent 1',
+          expand: true,
+          id: 0,
+          selected: true,
+          checked: false,
           children: [
             {
-              name: 'Ashley',
-              sex: 'female',
-              likes: ['football', 'basketball'],
-              score: 20,
+              name: 'parent 1-1',
+              expand: true,
+              id: 1,
+              parentId: 0,
+              selected: false,
+              checked: false,
               children: [
                 {
-                  name: 'Ashley',
-                  sex: 'female',
-                  likes: ['football', 'basketball'],
-                  score: 20
+                  name: '拖拽1-不可拖拽',
+                  expand: true,
+                  id: 3,
+                  selected: false,
+                  checked: false,
+                  disabledDrag: true,
+                  parentId: 1
                 },
                 {
-                  name: 'Taki',
-                  sex: 'male',
-                  likes: ['football', 'basketball'],
-                  score: 10,
-                  children: [
-                    {
-                      name: 'Ashley',
-                      sex: 'female',
-                      likes: ['football', 'basketball'],
-                      score: 20
-                    },
-                    {
-                      name: 'Taki',
-                      sex: 'male',
-                      likes: ['football', 'basketball'],
-                      score: 10,
-                      children: [
-                        {
-                          name: 'Ashley',
-                          sex: 'female',
-                          likes: ['football', 'basketball'],
-                          score: 20
-                        },
-                        {
-                          name: 'Taki',
-                          sex: 'male',
-                          likes: ['football', 'basketball'],
-                          score: 10
-                        }
-                      ]
-                    }
-                  ]
+                  name: '拖拽2-不显示右键',
+                  expand: true,
+                  id: 4,
+                  selected: false,
+                  checked: false,
+                  parentId: 1,
+                  disabledAll: true
                 }
               ]
             },
             {
-              name: 'Taki',
-              sex: 'male',
-              likes: ['football', 'basketball'],
-              score: 10
-            }
-          ]
-        },
-        {
-          name: 'Tom1',
-          sex: 'male',
-          likes: ['football', 'basketball'],
-          score: 20,
-          children: [
-            {
-              name: 'Ashley',
-              sex: 'female',
-              likes: ['football', 'basketball'],
-              score: 20,
+              name: 'parent 1-2',
+              expand: true,
+              id: 2,
+              disabledDelete: true,
+              disabledAdd: true,
+              parentId: 0,
+              selected: false,
+              checked: false,
               children: [
                 {
-                  name: 'Ashley',
-                  sex: 'female',
-                  likes: ['football', 'basketball'],
-                  score: 20
+                  name: '拖拽3-不可以拖拽到我身上',
+                  expand: true,
+                  id: 5,
+                  selected: false,
+                  checked: false,
+                  parentId: 2
                 },
                 {
-                  name: 'Taki',
-                  sex: 'male',
-                  likes: ['football', 'basketball'],
-                  score: 10
+                  name: '拖拽4-不显示默认按钮',
+                  expand: true,
+                  id: 6,
+                  selected: false,
+                  checked: false,
+                  parentId: 2,
+                  disabledEdit: true,
+                  disabledDelete: true,
+                  disabledAdd: true
+                },
+                {
+                  name: '拖拽5-已废弃',
+                  expand: true,
+                  id: 7,
+                  selected: false,
+                  checked: false,
+                  parentId: 2,
+                  tagColor: 'red'
+                },
+                {
+                  name: '拖拽6-不显示自定义',
+                  expand: true,
+                  id: 8,
+                  selected: false,
+                  checked: false,
+                  parentId: 2,
+                  disabledOwn: true
                 }
               ]
             },
             {
-              name: 'Taki',
-              sex: 'male',
-              likes: ['football', 'basketball'],
-              score: 10,
+              name: 'parent 1-3',
+              expand: true,
+              id: 10,
+              parentId: 0,
+              selected: false,
+              checked: false,
               children: [
                 {
-                  name: 'Ashley',
-                  sex: 'female',
-                  likes: ['football', 'basketball'],
-                  score: 20
+                  name: '拖拽7',
+                  expand: true,
+                  id: 11,
+                  selected: false,
+                  checked: false,
+                  parentId: 10
                 },
                 {
-                  name: 'Taki',
-                  sex: 'male',
-                  likes: ['football', 'basketball'],
-                  score: 10
+                  name: '拖拽8-不可选中',
+                  expand: true,
+                  id: 12,
+                  disabled: true,
+                  selected: false,
+                  checked: false,
+                  parentId: 10
+                },
+                {
+                  name: '拖拽9-不可删除',
+                  expand: true,
+                  id: 13,
+                  selected: false,
+                  checked: false,
+                  parentId: 10
+                },
+                {
+                  name: '拖拽10-不可编辑',
+                  expand: true,
+                  id: 14,
+                  selected: false,
+                  checked: false,
+                  parentId: 10
                 }
               ]
-            }
-          ]
-        },
-        {
-          name: 'Tom2',
-          sex: 'male',
-          likes: ['football', 'basketball'],
-          score: 30
-        },
-        {
-          name: 'Tom3',
-          sex: 'male',
-          likes: ['football', 'basketball'],
-          score: 40,
-          children: [
-            {
-              name: 'Ashley',
-              sex: 'female',
-              likes: ['football', 'basketball'],
-              score: 20
-            },
-            {
-              name: 'Taki',
-              sex: 'male',
-              likes: ['football', 'basketball'],
-              score: 10
             }
           ]
         }
       ],
-      checkedArray: [],
-      showModal: false,
-      editedValue: '',
-      editedRow: null
-    }
-  },
-  methods: {
-    handle (scope) {
-      console.log(scope)
-      const data = [1, 2, 3, 4, 5]
-      const indexToRemove = 2
-
-      const filteredData = data.reduce((acc, item, index) => {
-        if (index !== indexToRemove) {
-          acc.push(item)
-        }
-        return acc
-      }, [])
-
-      console.log(filteredData)
-      // Output: [1, 2, 4, 5]
-    },
-    handleCheckboxClick (row, checked) {
-      console.log('Row:', row)
-      console.log('Checked:', checked)
-      console.log('this.data:', this.data)
-      console.log('this.row._isChecked:', row._isChecked)
-      // Get the row data and checked state
-      // const data =
-      // if _isChecked is true, add the row to checkedArray
-      // if _isChecked is false, remove the row from checkedArray
-      // kindly send me the code
-      const ischecked = row._isChecked
-      if (ischecked) {
-        this.checkedArray.push(row)
-      } else {
-        // check the row in checkedArray and remove it as per the checked state
-        const nameToFind = 'Ashley'
-        const foundObject = this.findObjectByName(nameToFind, this.data)
-
-        if (foundObject) {
-          console.log(`Object with name '${nameToFind}' found:`, foundObject)
-        } else {
-          console.log(`Object with name '${nameToFind}' not found.`)
-        }
-
-        var i = this.checkedArray.findIndex(item => {
-          return item.name === row.name
-        })
-        this.checkedArray.splice(i, 1)
-      }
-      console.log('this.checkedArray:', this.checkedArray)
-      // const filteredData =
-      // console.log(filteredData)
-
-      this.data.filter(function (item) {
-        return item.name.trim() === row.name.trim()
-      })
-      // Do something with the row data and checked state
-      //
-    },
-    findObjectByName (name, data) {
-      for (let i = 0; i < data.length; i++) {
-        const obj = data[i]
-        if (obj.name === name) {
-          return obj
-        } else if (obj.children) {
-          const foundObj = this.findObjectByName(name, obj.children)
-          if (foundObj) {
-            return foundObj
-          }
-        }
-      }
-      return null
-    },
-    deleteObjectByName (name, data) {
-      for (let i = 0; i < data.length; i++) {
-        const obj = data[i]
-        if (obj.name === name) {
-          data.splice(i, 1)
-          return obj
-        } else if (obj.children) {
-          const foundObj = this.findObjectByName(name, obj.children)
-          if (foundObj) {
-            obj.children.splice(i, 1)
-            return foundObj
-          }
-        }
-      }
-      return null
-    },
-    addChildNode1 (name, data) {
-      const obj = this.findObjectByName(name, data)
-      if (obj) {
-        obj.children.push({
-          name: 'Taki',
-          sex: 'male',
-          likes: ['football', 'basketball'],
-          score: 10,
+      data2: [
+        {
+          name: 'parent 1',
+          expand: true,
+          id: 20,
+          selected: true,
+          checked: false,
           children: [
             {
-              name: 'Ashley',
-              sex: 'female',
-              likes: ['football', 'basketball'],
-              score: 20
+              name: 'parent 1-1',
+              expand: true,
+              id: 21,
+              parentId: 20,
+              selected: false,
+              checked: false,
+              children: [
+                {
+                  name: '拖拽1-不可拖拽',
+                  expand: true,
+                  id: 23,
+                  selected: false,
+                  checked: false,
+                  disabledDrag: true,
+                  parentId: 21
+                },
+                {
+                  name: '拖拽2-不显示右键',
+                  expand: true,
+                  id: 24,
+                  selected: false,
+                  checked: false,
+                  parentId: 21,
+                  disabledAll: true
+                }
+              ]
             },
             {
-              name: 'Taki',
-              sex: 'male',
-              likes: ['football', 'basketball'],
-              score: 10
-            }]
-        })
+              name: 'parent 1-2',
+              expand: true,
+              id: 22,
+              disabledDelete: true,
+              disabledAdd: true,
+              parentId: 20,
+              selected: false,
+              checked: false,
+              children: [
+                {
+                  name: '拖拽3-不可以拖拽到我身上',
+                  expand: true,
+                  id: 25,
+                  selected: false,
+                  checked: false,
+                  parentId: 22
+                },
+                {
+                  name: '拖拽4-不显示默认按钮',
+                  expand: true,
+                  id: 26,
+                  selected: false,
+                  checked: false,
+                  parentId: 22,
+                  disabledEdit: true,
+                  disabledDelete: true,
+                  disabledAdd: true
+                },
+                {
+                  name: '拖拽5-已废弃',
+                  expand: true,
+                  id: 27,
+                  selected: false,
+                  checked: false,
+                  parentId: 22,
+                  tagColor: 'red'
+                },
+                {
+                  name: '拖拽6-不显示自定义',
+                  expand: true,
+                  id: 28,
+                  selected: false,
+                  checked: false,
+                  parentId: 22,
+                  disabledOwn: true
+                }
+              ]
+            },
+            {
+              name: 'parent 1-3',
+              expand: true,
+              id: 210,
+              parentId: 20,
+              selected: false,
+              checked: false,
+              children: [
+                {
+                  name: '拖拽7',
+                  expand: true,
+                  id: 211,
+                  selected: false,
+                  checked: false,
+                  parentId: 210
+                },
+                {
+                  name: '拖拽8-不可选中',
+                  expand: true,
+                  id: 212,
+                  disabled: true,
+                  selected: false,
+                  checked: false,
+                  parentId: 210
+                },
+                {
+                  name: '拖拽9-不可删除',
+                  expand: true,
+                  id: 213,
+                  selected: false,
+                  checked: false,
+                  parentId: 210
+                },
+                {
+                  name: '拖拽10-不可编辑',
+                  expand: true,
+                  id: 214,
+                  selected: false,
+                  checked: false,
+                  parentId: 210
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  computed: {},
+  created () {},
+  mounted () {
+  },
+  methods: {
+    // 自定义按钮
+    ownClick () {
+      this.$Message.success('自定义按钮')
+    },
+    // 编辑前的方法 data1(全部数据) data2(编辑的数据) name(编辑后的内容) callback(确认编辑的回调)
+    editNodeBefore (data1, data2, name, callback) {
+      if (data2.id === 14) {
+        this.$Message.warning(data2.name)
+      } else {
+        callback()
       }
     },
-    addChildNode (scope) {
-      console.log(scope)
-      // const child = { id: row.children.length + 1, value: `Child ${row.children.length + 1}` }
-      const child = {
-        name: 'Tom44',
-        sex: 'male',
-        likes: ['football', 'basketball'],
-        score: 40
+    // 编辑后的方法
+    editNode (allData, oldData, newData) {
+      this.$Message.success('编辑成功刷新页面！')
+    },
+    // 删除前的回调 data1(全部数据) data2(删除的数据) callback(确认删除的回调) callback不支持使用在异步请求里
+    deleteNodeBefore (data1, data2, callback) {
+      if (data2.node.id === 13) {
+        this.$Message.warning(data2.node.name)
+      } else {
+        callback()
       }
-      scope.row.children.push(child)
     },
-    editCell (scope) {
-      this.editedRow = scope.row
-      this.editedValue = scope.row.name
-      this.showModal = true
+    // 删除成功后的方法
+    deleteNode (allData, delData) {
+      this.$Message.success('删除成功刷新页面！')
     },
-    saveCell () {
-      const foundObject = this.findObjectByName(this.editedRow.name, this.data)
-      foundObject.name = this.editedValue
-
-      console.log(this.data[0].name)
-      this.showModal = false
+    // 拖拽前的操作 allData(所有节点) data1(拖拽的节点) data2(拖拽到目标的节点) callback(拖拽成功后的回调)
+    onDragBefore (allData, data1, data2, callback) {
+      if (data2.id === 5) {
+        this.$Message.warning(data2.name)
+      } else {
+        callback()
+      }
     },
-    cancelEdit () {
-      this.showModal = false
+    // 拖拽成功后的方法
+    onDrag (allData, dragData) {
+      this.$Message.success('拖拽成功刷新页面！')
     }
   }
 }
 </script>
-
-<style>
-
+<style lang="less" scoped>
+    .demo-split-pane {
+        button {
+            margin-left: 12px;
+        }
+    }
 </style>
