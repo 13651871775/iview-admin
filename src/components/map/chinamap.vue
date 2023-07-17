@@ -1,8 +1,24 @@
 <!-- eslint-disable no-unused-vars -->
 <template>
   <div class="main">
-    <!-- 地图 -->
-    <div id="container"></div>
+      <!-- <div>
+          <Card>
+                <Split>
+                  <template slot="left" class="demo-split-pane">
+                    <div>left</div>
+                  </template>
+                  <template slot="right" class="demo-split-pane">
+                    <div>
+                      <Divider>详细描述</Divider>
+                      <h3>使用注意事项</h3>
+                      <span>是否多选：</span><Switch v-model="showMultiple" />
+                    </div>
+                  </template>
+                </Split>
+          </Card>
+      </div> -->
+      <!-- 地图 -->
+      <div id="container"></div>
   </div>
 </template>
 
@@ -20,10 +36,12 @@ export default {
   // },
   data () {
     return {
+      showMultiple: true,
       mapPointList: []
     }
   },
   mounted () {
+    console.log('components.map.chinamap.vue : mounted')
     this.mapPointList.push({
       point: [39.90923, 116.397428],
       deviceName: '北京',
@@ -54,6 +72,7 @@ export default {
       })
       // 初始化地图
       var map = new L.Map('container').setView([39.90923, 116.397428], 5)
+      console.log('map', map)
       // 瓦片图层
       L.tileLayer('http://localhost:8080/out/{z}/{x}/{y}.png', {
         minZoom: 5, // 最小缩小层级
@@ -111,8 +130,8 @@ export default {
   height: 100%;
 }
 #container {
-  padding: 0px;
-  margin: 0px;
+  padding: 250px;
+  margin: 50px;
   width: 100%;
   height: 100%;
 }
