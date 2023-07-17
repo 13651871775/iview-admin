@@ -46,8 +46,8 @@ export default [
           notCache: true,
           icon: 'md-home'
         },
-        component: () => import('@/view/map/chinamap.vue')
-        // component: () => import('@/view/single-page/home') LYR
+        // component: () => import('@/view/map/chinamap.vue')
+        component: () => import('@/view/single-page/home')
       }
     ]
   },
