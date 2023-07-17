@@ -21,23 +21,23 @@ import VOrgTree from 'v-org-tree'
 import 'v-org-tree/dist/v-org-tree.css'
 
 // lyr modify
-import HttpRequest from '@/libs/axios.js'
+// import HttpRequest from '@/libs/axios.js'
 
-const http = new HttpRequest('http://localhost:8091')
+// const http = new HttpRequest('http://localhost:8091')
 
-http.request({
-  method: 'get',
-  url: 'tour/user/info',
-  params: {
-    id: 1
-    // page: 1,
-    // limit: 10
-  }
-}).then(response => {
-  console.log(response.data)
-}).catch(error => {
-  console.error(error)
-})
+// http.request({
+//   method: 'get',
+//   url: 'tour/user/info',
+//   params: {
+//     id: 1
+//     // page: 1,
+//     // limit: 10
+//   }
+// }).then(response => {
+//   console.log(response.data)
+// }).catch(error => {
+//   console.error(error)
+// })
 // end lyr modify
 
 // 实际打包时应该不引入mock
